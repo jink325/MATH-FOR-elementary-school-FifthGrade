@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>因數獵人｜Factor Hunter</title>
+<style>
+:root{
+  --bg:#070b18;--panel:#10182c;--panel2:#151f38;--line:#293957;
+  --cyan:#42e8ff;--purple:#a78bfa;--green:#4ade80;--yellow:#facc15;
+  --red:#fb7185;--text:#edf5ff;--muted:#9aabc7;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+background:radial-gradient(ellipse at 15% 0%,#172958 0,transparent 40%),radial-gradient(ellipse at 90% 20%,#25164b 0,transparent 35%),var(--bg)}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.app{max-width:1180px;margin:auto;padding:22px 18px 36px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:48px;height:48px;display:grid;place-items:center;border:1px solid #3a6685;border-radius:14px;background:linear-gradient(135deg,#12334d,#27214d);font-size:25px;box-shadow:0 0 22px #42e8ff22}
+.eyebrow{font-size:11px;letter-spacing:2.8px;color:var(--cyan);font-weight:800}
+h1{font-size:clamp(22px,3vw,32px);margin:2px 0 0;letter-spacing:.5px}
+.header-right{display:flex;gap:9px;align-items:center}
+.pill{border:1px solid var(--line);background:#0c1427;border-radius:999px;padding:9px 13px;color:var(--muted);font-size:13px}
+.pill strong{color:var(--text)}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:17px}
+.panel{border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#121c32f2,#0b1223f5);box-shadow:0 16px 50px #0003;overflow:hidden}
+.panel-head{padding:17px 20px;border-bottom:1px solid #26344e;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-size:14px;font-weight:800;letter-spacing:.7px}
+.status{font-size:11px;letter-spacing:1px;color:var(--green);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.main-body{padding:20px}
+.target-box{position:relative;text-align:center;border:1px solid #2e5371;border-radius:17px;padding:19px 15px 16px;background:linear-gradient(120deg,#10263a,#171b3b 65%,#24183c);overflow:hidden}
+.target-box:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,#42e8ff0b 50%,transparent 50.2%);pointer-events:none}
+.target-label{color:var(--muted);font-size:12px;letter-spacing:1.5px}
+.target-number{font-size:clamp(58px,9vw,88px);line-height:1.1;font-weight:900;letter-spacing:2px;margin:6px 0;color:#fff;text-shadow:0 0 22px #42e8ff55}
+.target-number span{background:linear-gradient(180deg,#fff,#76eaff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.target-hint{font-size:13px;color:#c5d5ef}
+.timer-wrap{margin:18px 0 20px}
+.timer-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.timer-value{font-size:20px;font-weight:900;color:var(--cyan);font-variant-numeric:tabular-nums}
+.timer-track{height:8px;border-radius:99px;background:#27334b;overflow:hidden}
+.timer-bar{height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--purple));transition:width .2s linear}
+.timer-bar.warning{background:linear-gradient(90deg,#fb7185,#facc15)}
+.number-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.num{min-height:47px;border:1px solid #2a3956;border-radius:11px;background:linear-gradient(145deg,#17223a,#10182b);color:#dbe8ff;font-size:17px;font-weight:750;transition:transform .12s,border-color .12s,background .12s,box-shadow .12s;position:relative}
+.num:hover:not(:disabled){transform:translateY(-2px);border-color:#5b7aa6}
+.num.selected{border-color:var(--cyan);background:linear-gradient(145deg,#12394b,#16304c);color:#fff;box-shadow:inset 0 0 0 1px #42e8ff33,0 0 13px #42e8ff16}
+.num.selected:after{content:"✓";position:absolute;top:2px;right:5px;font-size:10px;color:var(--cyan)}
+.num:disabled{cursor:default;opacity:.85}
+.num.correct{border-color:#4ade80;background:#12392d;color:#bbf7d0}
+.num.missed{border-color:#facc15;background:#3b3012;color:#fef08a}
+.num.wrong{border-color:#fb7185;background:#3d1727;color:#fecdd3}
+.grid-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:9px;height:9px;border-radius:3px}
+.actions{display:flex;gap:10px;margin-top:17px}
+.btn{border:1px solid transparent;border-radius:12px;padding:12px 16px;font-weight:850;transition:transform .12s,filter .12s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{flex:1;color:#06111d;background:linear-gradient(100deg,var(--cyan),#8bdbff);box-shadow:0 7px 22px #42e8ff1a}
+.btn-secondary{color:#dbe8ff;background:#17223a;border-color:#344462}
+.side-body{padding:17px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{border:1px solid #293956;border-radius:13px;padding:14px;background:#0d1629}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:7px}
+.stat-value{font-size:26px;font-weight:900;line-height:1.1}
+.stat-value.cyan{color:var(--cyan)}.stat-value.purple{color:var(--purple)}.stat-value.yellow{color:var(--yellow)}.stat-value.green{color:var(--green)}
+.side-section{margin-top:17px}
+.side-heading{font-size:12px;letter-spacing:.8px;font-weight:850;margin-bottom:10px}
+.progress-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:9px 0}
+.progress-row strong{color:var(--text)}
+.progress-track{height:6px;border-radius:99px;background:#27334b;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width .2s}
+.tip{border:1px solid #3b3267;background:linear-gradient(130deg,#1b1a39,#151b31);border-radius:13px;padding:13px;color:#d9d6ff;font-size:13px;line-height:1.7}
+.tip strong{color:#c4b5fd}
+.feedback{margin-top:16px;border-radius:14px;padding:14px 15px;border:1px solid var(--line);background:#0c1425;line-height:1.7;font-size:13px}
+.feedback.hidden{display:none}
+.feedback h3{font-size:15px;margin:0 0 7px}
+.feedback.good{border-color:#2e7959;background:#102a24}
+.feedback.needs-work{border-color:#7a5b23;background:#2b2415}
+.feedback p{margin:5px 0;color:#d4e0f5}
+.feedback .good-text{color:#86efac}.feedback .miss-text{color:#fde68a}.feedback .wrong-text{color:#fda4af}
+.factor-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.factor-chip{border:1px solid #426a5a;color:#bbf7d0;background:#143126;padding:4px 8px;border-radius:7px;font-weight:800}
+.footer-note{text-align:center;color:#6f82a2;font-size:11px;margin-top:18px}
+.modal-backdrop{position:fixed;inset:0;background:#02040bd9;display:none;place-items:center;padding:18px;z-index:20}
+.modal-backdrop.show{display:grid}
+.modal{width:min(540px,100%);max-height:92vh;overflow:auto;border:1px solid #3a587c;border-radius:22px;background:linear-gradient(145deg,#15223b,#0b1121);box-shadow:0 25px 100px #0009;padding:26px;text-align:center}
+.modal-icon{font-size:38px}
+.modal h2{margin:9px 0;font-size:25px}
+.modal p{color:#b9c8df;line-height:1.7;font-size:14px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn{flex:1}
+.start-screen{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 15%,#1a3564,#070b18 65%);z-index:30;display:grid;place-items:center;padding:20px}
+.start-card{width:min(540px,100%);text-align:center;border:1px solid #345071;border-radius:24px;padding:clamp(24px,5vw,42px);background:#0b1426eF;box-shadow:0 0 80px #42e8ff10}
+.start-logo{font-size:56px;filter:drop-shadow(0 0 20px #42e8ff44)}
+.start-card h1{font-size:clamp(30px,6vw,44px);margin:8px 0}
+.start-card h1 em{font-style:normal;color:var(--cyan)}
+.start-card p{color:#a9bad4;line-height:1.8;font-size:14px}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0}
+.rule{padding:12px 7px;border:1px solid #293956;border-radius:12px;background:#111d32}
+.rule b{display:block;color:var(--cyan);font-size:17px;margin-bottom:4px}
+.rule span{font-size:11px;color:var(--muted)}
+.start-btn{width:100%;font-size:16px;padding:15px}
+
+.difficulty-picker{margin:18px 0 20px;text-align:left}
+.difficulty-title{font-size:13px;font-weight:850;color:#e5efff;margin-bottom:9px}
+.difficulty-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.difficulty-option{border:1px solid #2c3e5c;border-radius:12px;padding:11px 6px;background:#101b30;color:#dce8ff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
+.difficulty-option.active{border-color:var(--cyan);background:linear-gradient(145deg,#12394b,#192542);box-shadow:inset 0 0 0 1px #42e8ff28,0 0 16px #42e8ff12}
+.difficulty-name{font-size:13px;font-weight:900}
+.difficulty-name i{font-style:normal;font-size:9px;color:#06111d;background:var(--cyan);border-radius:5px;padding:2px 4px;margin-left:2px}
+.difficulty-option strong{font-size:17px;color:var(--cyan)}
+.difficulty-option small{font-size:10px;color:var(--muted);line-height:1.4}
+.difficulty-note{font-size:11px;color:#9aabc7;line-height:1.6;margin:10px 1px 0}
+.review-list{max-height:42vh;overflow:auto;text-align:left;margin:16px 0;border-top:1px solid #293956}
+.review-item{padding:12px 2px;border-bottom:1px solid #293956;font-size:12px;line-height:1.7;color:#c6d4e9}
+.review-item strong{color:#fff}
+.review-item .review-good{color:#86efac}.review-item .review-miss{color:#fde68a}.review-item .review-wrong{color:#fda4af}
+.review-title{font-size:13px;font-weight:850;text-align:left;margin-top:18px}
+
+.end-screen{display:none;position:fixed;inset:0;background:#02040bd9;place-items:center;padding:18px;z-index:25}
+.end-screen.show{display:grid}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.side-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.side-section{margin-top:0}.number-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:520px){.app{padding:14px 10px 25px}.header-right .pill:first-child{display:none}.panel-head{padding:14px}.main-body{padding:13px}.number-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.num{min-height:43px;font-size:15px}.side-grid{display:block}.side-section{margin-top:15px}.actions .btn{padding:12px 10px}.target-box{padding:15px 10px}.stat-value{font-size:23px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="start-screen" id="startScreen">
+  <div class="start-card">
+    <div class="start-logo">⌁⚡</div>
+    <div class="eyebrow">MATH QUEST · GRADE 5</div>
+    <h1>因數<em>獵人</em></h1>
+    <p>數字任務已啟動！找出目標數字的所有因數，<br>用你的數感突破關卡、累積積分。</p>
+    <div class="rules">
+      <div class="rule"><b>彈性時間</b><span>依難度調整</span></div>
+      <div class="rule"><b>1–100</b><span>隨機目標數</span></div>
+      <div class="rule"><b>學習暫停</b><span>看答案不計時</span></div>
+    </div>
+    <div class="difficulty-picker">
+      <div class="difficulty-title">選擇挑戰難度</div>
+      <div class="difficulty-options">
+        <button type="button" class="difficulty-option" data-difficulty="easy">
+          <span class="difficulty-name">簡單</span><strong>90 秒</strong><small>完整答對 70 分</small>
+        </button>
+        <button type="button" class="difficulty-option active" data-difficulty="medium">
+          <span class="difficulty-name">中等 <i>推薦</i></span><strong>75 秒</strong><small>完整答對 100 分</small>
+        </button>
+        <button type="button" class="difficulty-option" data-difficulty="hard">
+          <span class="difficulty-name">困難</span><strong>60 秒</strong><small>完整答對 125 分</small>
+        </button>
+      </div>
+      <p class="difficulty-note">完整答對可獲得額外時間；提交後查看答案與提示時，倒數會暫停。</p>
+    </div>
+    <button class="btn btn-primary start-btn" id="startBtn">開始任務　▶</button>
+    <p style="font-size:11px;margin-bottom:0">小提醒：因數是能讓目標數字整除、餘數為 0 的正整數。</p>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">⌁</div>
+      <div><div class="eyebrow">FACTOR HUNTER / MATH QUEST</div><h1>因數獵人</h1></div>
+    </div>
+    <div class="header-right">
+      <div class="pill">模式 <strong>限時挑戰</strong></div>
+      <div class="pill">任務 <strong id="roundLabel">尚未開始</strong></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">◈　目標分析區</div>
+        <div class="status"><span class="dot"></span><span id="statusText">等待啟動</span></div>
+      </div>
+      <div class="main-body">
+        <div class="target-box">
+          <div class="target-label">TARGET NUMBER / 目標數字</div>
+          <div class="target-number"><span id="targetNumber">?</span></div>
+          <div class="target-hint">點選所有能整除這個數字的因數</div>
+        </div>
+        <div class="timer-wrap">
+          <div class="timer-top"><span>剩餘時間</span><span class="timer-value" id="timerValue">01:00</span></div>
+          <div class="timer-track"><div class="timer-bar" id="timerBar"></div></div>
+        </div>
+        <div class="panel-title" style="margin-bottom:11px">選取數字 <span style="font-size:11px;color:var(--muted);font-weight:500">／ 再點一次可取消</span></div>
+        <div class="number-grid" id="numberGrid" aria-label="候選數字"></div>
+        <div class="grid-legend">
+          <span class="legend-item"><i class="legend-swatch" style="background:var(--cyan)"></i>已選取</span>
+          <span class="legend-item"><i class="legend-swatch" style="background:#4ade80"></i>正確因數</span>
+          <span class="legend-item"><i class="legend-swatch" style="background:#facc15"></i>漏找因數</span>
+          <span class="legend-item"><i class="legend-swatch" style="background:#fb7185"></i>誤選數字</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" id="clearBtn" disabled>↺ 清除選取</button>
+          <button class="btn btn-primary" id="submitBtn" disabled>提交答案　→</button>
+        </div>
+        <div class="feedback hidden" id="feedback" aria-live="polite"></div>
+        <div class="actions" id="nextActions" style="display:none">
+          <button class="btn btn-primary" id="nextBtn">下一個目標　▶</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head"><div class="panel-title">◈　獵人戰績</div><div style="font-size:11px;color:var(--muted)">LIVE STATS</div></div>
+      <div class="side-body">
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-label">累積積分</div><div class="stat-value cyan" id="score">0</div></div>
+          <div class="stat"><div class="stat-label">完成題數</div><div class="stat-value purple" id="completed">0</div></div>
+          <div class="stat"><div class="stat-label">完整答對</div><div class="stat-value green" id="perfect">0</div></div>
+          <div class="stat"><div class="stat-label">連續完整答對</div><div class="stat-value yellow" id="streak">0</div></div>
+        </div>
+        <div class="side-section">
+          <div class="side-heading">本次挑戰進度</div>
+          <div class="progress-row"><span>正確率（完整答對）</span><strong id="accuracy">—</strong></div>
+          <div class="progress-track"><div class="progress-fill" id="accuracyBar"></div></div>
+          <div class="progress-row"><span>目前選取</span><strong id="selectedCount">0 個</strong></div>
+          <div class="progress-row"><span>本題因數總數</span><strong id="factorCount">—</strong></div>
+        </div>
+        <div class="side-section">
+          <div class="side-heading">獵人小提示</div>
+          <div class="tip" id="tip"><strong>策略提示</strong><br>可以從 1 開始依序檢查。也別忘了：1 和目標數字本身一定是因數（目標數字為正整數時）。</div>
+        </div>
+        <div class="side-section">
+          <div class="side-heading">挑戰規則</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.8">
+            • 找齊所有因數，才算完整答對。<br>
+            • 漏找與誤選會分開顯示。<br>
+            • 提交後可查看正確因數與配對提示。<br>
+            • 時間結束後，系統會結算本次成績。
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="footer-note">FACTOR HUNTER · 練習觀察、判斷與驗證，成為數字偵探。</div>
+</div>
+
+<div class="modal-backdrop" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="modal">
+    <div class="modal-icon">⏱️</div>
+    <h2 id="confirmTitle">時間到！</h2>
+    <p id="confirmText">本次挑戰已結束。</p>
+    <div class="modal-actions"><button class="btn btn-primary" id="seeResultBtn">查看成績</button></div>
+  </div>
+</div>
+<div class="end-screen" id="endScreen">
+  <div class="modal">
+    <div class="modal-icon">🏆</div>
+    <div class="eyebrow">MISSION COMPLETE</div>
+    <h2>挑戰結束！</h2>
+    <p id="finalText"></p>
+    <div class="stat-grid" style="text-align:left;margin:18px 0">
+      <div class="stat"><div class="stat-label">總積分</div><div class="stat-value cyan" id="finalScore">0</div></div>
+      <div class="stat"><div class="stat-label">完整答對</div><div class="stat-value green" id="finalPerfect">0</div></div>
+    </div>
+    <div class="review-title">本次題目回顧｜答案與思考提示</div>
+    <div class="review-list" id="finalReview"></div>
+    <button class="btn btn-primary start-btn" id="restartBtn">再挑戰一次　↻</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const DIFFICULTIES = {
+    easy:   { label: '簡單', seconds: 90, points: 70, partial: 3, bonus: 4 },
+    medium: { label: '中等', seconds: 75, points: 100, partial: 4, bonus: 5 },
+    hard:   { label: '困難', seconds: 60, points: 125, partial: 5, bonus: 6 }
+  };
+  const MAX_BONUS_SECONDS = 18;
+  let difficulty = 'medium', target = null, selected = new Set(), answered = false, running = false;
+  let secondsLeft = 75, timerId = null, round = 0, score = 0, completed = 0, perfect = 0, streak = 0, bestStreak = 0, previousTarget = null;
+  let history = [], questionStarted = false, timeBonusEarned = 0;
+
+  function factorsOf(n) {
+    const result = [];
+    for (let i = 1; i <= n; i++) if (n % i === 0) result.push(i);
+    return result;
+  }
+  function randomTarget() {
+    let n = Math.floor(Math.random() * 100) + 1;
+    if (n === previousTarget) n = (n % 100) + 1;
+    previousTarget = n;
+    return n;
+  }
+  function setStatus(text, color) {
+    $('statusText').textContent = text;
+    const dot = document.querySelector('.dot');
+    dot.style.background = color || 'var(--green)';
+    dot.style.boxShadow = `0 0 12px ${color || 'var(--green)'}`;
+  }
+  function renderGrid() {
+    const grid = $('numberGrid');
+    grid.innerHTML = '';
+    for (let n = 1; n <= target; n++) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'num'; b.textContent = n;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => toggleNumber(n, b));
+      grid.appendChild(b);
+    }
+    updateSelectedCount();
+  }
+  function toggleNumber(n, button) {
+    if (!running || answered || secondsLeft <= 0) return;
+    if (selected.has(n)) selected.delete(n); else selected.add(n);
+    button.classList.toggle('selected', selected.has(n));
+    button.setAttribute('aria-pressed', String(selected.has(n)));
+    updateSelectedCount();
+  }
+  function updateSelectedCount() { $('selectedCount').textContent = `${selected.size} 個`; }
+  function updateStats() {
+    $('score').textContent = score;
+    $('completed').textContent = completed;
+    $('perfect').textContent = perfect;
+    $('streak').textContent = streak;
+    $('roundLabel').textContent = round ? `第 ${round} 題` : '尚未開始';
+    const accuracy = completed ? Math.round(perfect / completed * 100) : null;
+    $('accuracy').textContent = accuracy === null ? '—' : `${accuracy}%`;
+    $('accuracyBar').style.width = `${accuracy || 0}%`;
+  }
+  function updateTimer() {
+    $('timerValue').textContent = `${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`;
+    const initial = DIFFICULTIES[difficulty].seconds;
+    $('timerBar').style.width = `${Math.min(100, secondsLeft / initial * 100)}%`;
+    $('timerBar').classList.toggle('warning', secondsLeft <= 10);
+    $('timerValue').style.color = secondsLeft <= 10 ? 'var(--red)' : 'var(--cyan)';
+  }
+  function startGame() {
+    clearInterval(timerId);
+    const cfg = DIFFICULTIES[difficulty];
+    score = 0; completed = 0; perfect = 0; streak = 0; bestStreak = 0; round = 0; previousTarget = null; questionStarted = false;
+    secondsLeft = cfg.seconds; running = true; history = []; timeBonusEarned = 0;
+    $('startScreen').style.display = 'none';
+    $('endScreen').classList.remove('show');
+    $('confirmModal').classList.remove('show');
+    $('finalReview').innerHTML = '';
+    updateStats(); updateTimer();
+    nextQuestion();
+    // 計時只在「作答中」進行；提交後閱讀回饋、檢查答案與思考下一步都不計時。
+    timerId = setInterval(() => {
+      if (!running || answered) return;
+      secondsLeft = Math.max(0, secondsLeft - 1);
+      updateTimer();
+      if (secondsLeft <= 0) {
+        running = false;
+        clearInterval(timerId);
+        setStatus('時間到', 'var(--red)');
+        $('confirmTitle').textContent = '時間到！';
+        $('confirmText').textContent = '作答時間已結束。你可以查看目前成績與已完成題目的答案解析。';
+        $('confirmModal').classList.add('show');
+        $('numberGrid').querySelectorAll('button').forEach(b => b.disabled = true);
+        $('clearBtn').disabled = true; $('submitBtn').disabled = true;
+        $('nextActions').style.display = 'none';
+        if (!answered) recordUnansweredQuestion();
+      }
+    }, 1000);
+  }
+  function nextQuestion() {
+    if (!running) return;
+    target = randomTarget(); selected = new Set(); answered = false; round++;
+    $('targetNumber').textContent = target;
+    $('factorCount').textContent = `${factorsOf(target).length} 個`;
+    $('feedback').className = 'feedback hidden';
+    $('feedback').innerHTML = '';
+    $('nextActions').style.display = 'none';
+    $('clearBtn').disabled = false;
+    $('submitBtn').disabled = false;
+    $('tip').innerHTML = '<strong>策略提示</strong><br>先檢查 1 和目標數字本身，再想想哪些數字相乘會得到它。';
+    setStatus('任務進行中', 'var(--green)');
+    renderGrid(); updateStats(); updateTimer();
+  }
+  function clearSelection() {
+    if (!running || answered) return;
+    selected.clear();
+    document.querySelectorAll('.num').forEach(b => {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    updateSelectedCount();
+  }
+  function submitAnswer() {
+    if (!running || answered || secondsLeft <= 0) return;
+    answered = true; // 暫停倒數，讓學生有完整時間讀取回饋與反思。
+    const cfg = DIFFICULTIES[difficulty];
+    const factors = factorsOf(target), factorSet = new Set(factors);
+    const correct = [...selected].filter(n => factorSet.has(n)).sort((a,b)=>a-b);
+    const missed = factors.filter(n => !selected.has(n));
+    const wrong = [...selected].filter(n => !factorSet.has(n)).sort((a,b)=>a-b);
+    const isPerfect = missed.length === 0 && wrong.length === 0;
+    completed++;
+    let earned = 0, bonus = 0;
+    if (isPerfect) {
+      perfect++; streak++; bestStreak = Math.max(bestStreak, streak);
+      earned = cfg.points + (streak > 1 ? Math.min(streak * 5, 20) : 0);
+      // 完整答對時回饋額外秒數，設有上限，避免時間無限累積。
+      const before = secondsLeft;
+      secondsLeft = Math.min(cfg.seconds + MAX_BONUS_SECONDS, secondsLeft + cfg.bonus);
+      bonus = secondsLeft - before;
+      timeBonusEarned += bonus;
+    } else {
+      streak = 0;
+      earned = correct.length * cfg.partial;
+    }
+    score += earned;
+    const record = { round, target, selected:[...selected].sort((a,b)=>a-b), correct, missed, wrong, factors, isPerfect, earned, bonus, pairs: makePairHint(target, factors) };
+    history.push(record);
+    updateStats(); updateTimer();
+    $('numberGrid').querySelectorAll('button').forEach(b => {
+      const n = Number(b.textContent);
+      b.disabled = true;
+      b.classList.remove('selected');
+      if (selected.has(n) && factorSet.has(n)) b.classList.add('correct');
+      else if (!selected.has(n) && factorSet.has(n)) b.classList.add('missed');
+      else if (selected.has(n) && !factorSet.has(n)) b.classList.add('wrong');
+    });
+    $('clearBtn').disabled = true; $('submitBtn').disabled = true;
+    $('nextActions').style.display = 'flex';
+    setStatus(isPerfect ? '完美命中' : '學習回饋', isPerfect ? 'var(--green)' : 'var(--yellow)');
+    const fb = $('feedback');
+    fb.className = `feedback ${isPerfect ? 'good' : 'needs-work'}`;
+    fb.innerHTML = `
+      <h3>${isPerfect ? '⚡ 完美命中！所有因數都找到了！' : '🔍 任務分析：再檢查一次思路'}</h3>
+      <p class="good-text">✓ 答對因數：${correct.length} 個${correct.length ? `（${correct.join('、')}）` : ''}</p>
+      <p class="miss-text">! 漏找因數：${missed.length} 個${missed.length ? `（${missed.join('、')}）` : '（沒有漏找）'}</p>
+      <p class="wrong-text">× 誤選數字：${wrong.length} 個${wrong.length ? `（${wrong.join('、')}）` : '（沒有誤選）'}</p>
+      <p><strong>完整因數：</strong>${factors.join('、')}</p>
+      <p><strong>數字偵探提示：</strong>${record.pairs}</p>
+      <p><strong>本題得分：</strong>${earned} 分${isPerfect ? `　<strong>時間獎勵：</strong>+${bonus} 秒` : ''}</p>
+      <p>${isPerfect ? '你已獲得完整答對獎勵！請花點時間觀察因數配對，再進入下一題。' : '不用急著往下！先看看黃色的漏找因數與紅色的誤選數字，想一想：目標數字除以這個數，餘數是不是 0？'}</p>
+    `;
+    $('tip').innerHTML = `<strong>本題觀察</strong><br>${record.pairs}<br><br><strong>時間已暫停</strong><br>放心查看答案與提示，按「下一個目標」才會繼續倒數。`;
+    $('nextBtn').textContent = secondsLeft > 0 ? '下一個目標　▶' : '查看挑戰結果　▶';
+    fb.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+  function recordUnansweredQuestion() {
+    if (questionStarted || target === null) return;
+    questionStarted = true;
+    const factors = factorsOf(target);
+    history.push({ round, target, selected:[...selected].sort((a,b)=>a-b), correct:[], missed:factors, wrong:[], factors, isPerfect:false, earned:0, bonus:0, pairs:makePairHint(target,factors), timeout:true });
+  }
+  function makePairHint(n, factors) {
+    const pairs = [];
+    for (const f of factors) {
+      const other = n / f;
+      if (f > other) break;
+      pairs.push(`${f} × ${other}`);
+    }
+    return `因數可以配成乘法算式：${pairs.join('、')}。每一組乘積都是 ${n}。`;
+  }
+  function endGame() {
+    running = false; clearInterval(timerId);
+    $('confirmModal').classList.remove('show');
+    $('endScreen').classList.add('show');
+    $('finalScore').textContent = score; $('finalPerfect').textContent = perfect;
+    $('finalText').textContent = `挑戰難度：${DIFFICULTIES[difficulty].label}。你完成了 ${completed} 題，其中 ${perfect} 題完整找齊因數。${completed ? `完整答對率為 ${Math.round(perfect/completed*100)}%。` : '下次再來挑戰，熟悉因數會越來越快！'} ${timeBonusEarned ? `你總共獲得 ${timeBonusEarned} 秒獎勵時間。` : ''} ${bestStreak > 1 ? `本次最佳連勝 ${bestStreak} 題！` : ''}`;
+    renderHistory();
+    setStatus('挑戰已結束', 'var(--purple)');
+    $('clearBtn').disabled = true; $('submitBtn').disabled = true;
+  }
+  function renderHistory() {
+    const box = $('finalReview');
+    if (!history.length) { box.innerHTML = '<p class="review-item">這次沒有完成題目，歡迎重新挑戰。</p>'; return; }
+    box.innerHTML = history.map(r => `
+      <div class="review-item">
+        <strong>第 ${r.round} 題｜目標數字 ${r.target}</strong>　${r.isPerfect ? '<span class="review-good">完整答對</span>' : r.timeout ? '<span class="review-wrong">時間到未提交</span>' : '<span class="review-miss">再練習一次</span>'}<br>
+        你的選擇：${r.selected.length ? r.selected.join('、') : '未選取'}<br>
+        <span class="review-good">答對：${r.correct.length ? r.correct.join('、') : '無'}</span>　
+        <span class="review-miss">漏找：${r.missed.length ? r.missed.join('、') : '無'}</span>　
+        <span class="review-wrong">誤選：${r.wrong.length ? r.wrong.join('、') : '無'}</span><br>
+        <strong>完整因數：</strong>${r.factors.join('、')}<br>${r.pairs}
+      </div>`).join('');
+  }
+  document.querySelectorAll('.difficulty-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      difficulty = btn.dataset.difficulty;
+      document.querySelectorAll('.difficulty-option').forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+  $('startBtn').addEventListener('click', startGame);
+  $('clearBtn').addEventListener('click', clearSelection);
+  $('submitBtn').addEventListener('click', submitAnswer);
+  $('nextBtn').addEventListener('click', () => { if (secondsLeft <= 0) endGame(); else nextQuestion(); });
+  $('restartBtn').addEventListener('click', () => {
+    $('endScreen').classList.remove('show');
+    $('startScreen').style.display = 'grid';
+  });
+  $('seeResultBtn').addEventListener('click', endGame);
+  updateTimer();
+})();
+</script>
+</body>
+</html>
